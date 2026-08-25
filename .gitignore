@@ -1,0 +1,15 @@
+# Virtual Environment
+venv/
+__pycache__/
+*.pyc
+
+# Database files
+*.db
+
+# Data files (Raw & Processed)
+*.csv
+data/raw/
+data/processed/
+
+# System files
+.DS_Store
