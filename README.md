@@ -47,3 +47,24 @@ IF(
     LOOKUPVALUE(RESTRICTED_dim_customers_full[full_name], RESTRICTED_dim_customers_full[customer_hash], SELECTEDVALUE(fact_transactions[customer_hash])),
     LOOKUPVALUE(dim_customers_masked[name_masked], dim_customers_masked[customer_hash], SELECTEDVALUE(fact_transactions[customer_hash]))
 )
+
+## 📊 Dashboards & Analytics Suite
+
+The project features a 2-page Power BI reporting suite connected to the processed star-schema data and security audit logs.
+
+### 1. Executive Fraud Risk Dashboard
+![Executive Fraud Analytics](docs/images/executive_dashboard.png)
+
+* **Key Metrics:** Highlights total fraud volume, high-risk merchant categories, and model prediction outcomes.
+
+---
+
+### 2. Security & Compliance Audit Log
+![Security & Compliance Audit](docs/images/compliance_dashboard.png)
+
+* **Access Governance:** Tracks access counts by role (`analyst` vs `admin`).
+* **Security Flagging:** Surfaces unauthorized access attempts (`VIEW_AUDIT_LOG_DENIED`) via dynamic conditional red highlighting.
+
+---
+
+> **Inspection Template:** Download or clone [`powerbi/fraud_risk_analytics.pbit`](./powerbi/fraud_risk_analytics.pbit) to view the underlying schema, relationships, and DAX measures in Power BI Desktop.
