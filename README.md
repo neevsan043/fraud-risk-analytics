@@ -67,6 +67,8 @@ fraud-risk-analytics/
 │   └── train_model.py            # Baseline vs. XGBoost model training
 ├── powerbi/
 │   └── export_star_schema.py     # Power BI data export pipeline
+|   └── export_audit_log.py       # Audit Logs 
+|   └── fraud_risk_analytics.pbit # Powerbi Export File
 ├── sql/
 │   └── schema.sql                # MySQL / SQLite DDL schema of record
 ├── requirements.txt              # Python dependencies
