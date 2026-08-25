@@ -47,29 +47,3 @@ IF(
     LOOKUPVALUE(RESTRICTED_dim_customers_full[full_name], RESTRICTED_dim_customers_full[customer_hash], SELECTEDVALUE(fact_transactions[customer_hash])),
     LOOKUPVALUE(dim_customers_masked[name_masked], dim_customers_masked[customer_hash], SELECTEDVALUE(fact_transactions[customer_hash]))
 )
-
-📂 Repository Structure
-
-fraud-risk-analytics/
-├── app/
-│   └── data_access.py            # RBAC enforcement layer & audit logging
-├── data/
-│   ├── raw/                      # Raw Kaggle transaction data
-│   └── processed/                # Processed CSVs & SQLite DB
-├── docs/
-│   ├── requirements.md           # Business & Functional Requirements
-│   ├── powerbi_setup.md          # Star-schema & DAX installation guide
-│   └── data_dictionary.xlsx      # Table & column documentation
-├── etl/
-│   ├── enrich_data.py            # Synthetic business context generator & ETL
-│   └── load_to_sqlite.py         # Database seeding & schema initializer
-├── model/
-│   └── train_model.py            # Baseline vs. XGBoost model training
-├── powerbi/
-│   └── export_star_schema.py     # Power BI data export pipeline
-|   └── export_audit_log.py       # Audit Logs 
-|   └── fraud_risk_analytics.pbit # Powerbi Export File
-├── sql/
-│   └── schema.sql                # MySQL / SQLite DDL schema of record
-├── requirements.txt              # Python dependencies
-└── README.md
