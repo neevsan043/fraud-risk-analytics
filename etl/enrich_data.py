@@ -1,13 +1,7 @@
 """
-Enrich the Kaggle credit-card-fraud dataset with synthetic business context
-(customers, merchants, channel, geography) while preserving the REAL
-transaction amounts, timestamps (offset), and fraud labels.
-
-Why: the raw Kaggle set is PCA-anonymized with no PII at all, so it can't
-demonstrate a masking/access-control story on its own. This keeps the real
-V1-V28 features + Class label (genuine fraud signal) and layers realistic
-business + customer data on top, mapped consistently (same customer_hash
-reused across that customer's transactions).
+Enrich Kaggle credit card fraud dataset with contextual business attributes
+(customers, merchants, channel, geography) while preserving original
+transaction amounts, timestamps, and fraud labels for analytics and modeling.
 """
 import hashlib
 import random
@@ -81,9 +75,8 @@ def main():
     customers = build_customers(N_CUSTOMERS)
     merchants = build_merchants(N_MERCHANTS)
 
-    # Assign transactions to customers with a skewed distribution (some
-    # customers transact far more than others, like real life), and to
-    # merchants uniformly-ish.
+    # Skew customer transaction frequency using an exponential distribution
+    # to emulate real-world spending patterns, and distribute across merchants.
     cust_weights = np.random.exponential(scale=1.0, size=N_CUSTOMERS)
     cust_weights = cust_weights / cust_weights.sum()
     assigned_customers = np.random.choice(
@@ -105,9 +98,7 @@ def main():
     raw["home_country"] = raw["customer_id"].map(cust_home)
     raw["merchant_country"] = raw["merchant_id"].map(merch_country)
 
-    # Fraudulent transactions are more likely to be foreign / online —
-    # realistic pattern, and gives the model (and dashboard) a genuine
-    # geography-based signal to surface.
+    # Simulate higher propensity of foreign/online transactions for fraudulent events
     is_fraud = raw["Class"] == 1
     flip_foreign = np.random.rand(len(raw)) < np.where(is_fraud, 0.55, 0.06)
     raw.loc[flip_foreign, "device_country"] = raw.loc[flip_foreign].apply(
@@ -115,10 +106,6 @@ def main():
     )
     raw["device_country"] = raw["device_country"].fillna(raw["home_country"])
 
-    customers = customers.merge(
-        raw.loc[raw["customer_id"].isin(customers["customer_id"]), ["customer_id"]]
-        .drop_duplicates(), on="customer_id", how="left"
-    )
     cust_hash_map = customers.set_index("customer_id")["customer_hash"]
     raw["customer_hash"] = raw["customer_id"].map(cust_hash_map)
 
@@ -147,15 +134,12 @@ def main():
     features["txns_last_1h"] = (features["gap_seconds"] < 3600).astype(int).fillna(0)
     features = features.drop(columns=["gap_seconds"])
 
-    # ---- ground-truth fraud labels (kept separate, mirrors fraud_flags table
-    #      shape but this is the LABEL, not a model prediction) ----
+    # ---- ground-truth fraud labels ----
     labels = raw[["transaction_id", "Class"]].rename(columns={"Class": "actual_label"})
 
-    # ---- raw model features (V1-V28) kept as its own file, referenced by
-    #      transaction_id, so the "business" schema stays clean of the
-    #      anonymized PCA columns ----
-    model_features = raw[["transaction_id"] + [f"V{i}" for i in range(1, 29)] + ["amount", "Class"] if False else
-                          ["transaction_id"] + [f"V{i}" for i in range(1, 29)]]
+    # ---- raw model features (V1-V28) ----
+    pca_cols = [f"V{i}" for i in range(1, 29)]
+    model_features = raw[["transaction_id"] + pca_cols].copy()
     model_features["amount"] = raw["Amount"]
     model_features["class"] = raw["Class"]
 

@@ -1,12 +1,9 @@
 """
-Train fraud-scoring models on the enriched dataset.
+Model training pipeline for transaction fraud detection.
 
-Uses the real V1-V28 (PCA) features + Amount from Kaggle, plus our
-engineered business features (amount_zscore, is_foreign_txn, hour_of_day,
-txns_last_1h). Handles severe class imbalance (0.17% fraud) via class
-weighting rather than naive accuracy optimization — precision/recall and
-PR-AUC are tracked instead, since accuracy is meaningless here (a model
-that predicts "never fraud" would score 99.8% accuracy).
+Trains and evaluates baseline Logistic Regression and XGBoost classifiers
+on PCA features and engineered transaction features, optimizing for
+precision-recall AUC given the highly imbalanced class distribution.
 """
 import sqlite3
 import pandas as pd
@@ -83,12 +80,12 @@ def main():
     xgb_pred = (xgb_proba >= 0.5).astype(int)
     evaluate("XGBoost (scale_pos_weight)", y_test, xgb_pred, xgb_proba)
 
-    # Feature importance — useful for the "business insight" narrative
+    # Compute feature importances
     importances = pd.Series(xgb.feature_importances_, index=X.columns).sort_values(ascending=False)
     print("\nTop 10 feature importances (XGBoost):")
     print(importances.head(10))
 
-    # ---- Score ALL transactions with the final model, write to fraud_flags ----
+    # ---- Score all transactions with final model ----
     print("\nScoring full dataset for fraud_flags table...")
     full_proba = xgb.predict_proba(X)[:, 1]
     full_pred = (full_proba >= 0.5).astype(int)
@@ -116,9 +113,9 @@ def main():
     conn.close()
     print(f"Wrote {len(flags)} rows to fraud_flags. Flagged as fraud: {flags['predicted_label'].sum()}")
 
-    # Save model + scaler for reuse
-    joblib.dump(xgb, f"{CSV_DIR}/../../model/xgb_model.joblib")
-    joblib.dump(scaler, f"{CSV_DIR}/../../model/scaler.joblib")
+    # Save model artifacts
+    joblib.dump(xgb, "model/xgb_model.joblib")
+    joblib.dump(scaler, "model/scaler.joblib")
     importances.to_csv("model/feature_importances.csv", header=["importance"])
     print("Model saved to model/xgb_model.joblib")
 

@@ -1,18 +1,14 @@
 """
-Admin audit-log monitor.
+Real-time audit log monitor CLI.
 
-Unlike a Power BI page (which only refreshes on schedule/import), this
-queries the LIVE SQLite database directly every time it's run — so it
-always reflects the current state of audit_log, including access events
-that happened seconds ago. This is what "real-time monitoring" actually
-means for a database-backed audit trail: querying the live table, not a
-cached export.
+Directly queries the database for recent access events, filtering by
+time window, user, or denied actions.
 
 Usage:
     python3 app/audit_monitor.py                  # last 20 events
     python3 app/audit_monitor.py --hours 24        # last 24 hours
     python3 app/audit_monitor.py --user alex_analyst
-    python3 app/audit_monitor.py --denied-only     # flag suspicious denials
+    python3 app/audit_monitor.py --denied-only     # show denied access events
 """
 import argparse
 import sqlite3

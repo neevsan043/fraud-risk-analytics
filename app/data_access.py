@@ -111,22 +111,22 @@ def get_audit_trail(username: str, limit: int = 50) -> list:
 
 
 if __name__ == "__main__":
-    print("--- 1. Analyst requests a customer record (should be masked) ---")
+    print("--- Customer record query (analyst role / masked) ---")
     print(get_customer("alex_analyst", 1))
 
-    print("\n--- 2. Admin requests the same record (should be full PII) ---")
+    print("\n--- Customer record query (admin role / unmasked) ---")
     print(get_customer("priya_admin", 1))
 
-    print("\n--- 3. Analyst views top flagged transactions (masked join) ---")
+    print("\n--- Flagged transactions query (analyst role) ---")
     for r in get_flagged_transactions("alex_analyst", min_score=0.9, limit=3):
         print(r)
 
-    print("\n--- 4. Analyst attempts to view audit logs (should be blocked & logged) ---")
+    print("\n--- Audit log access check (analyst role) ---")
     try:
         get_audit_trail("alex_analyst")
     except AccessDeniedError as e:
-        print(f"Blocked as expected: {e}")
+        print(f"Access denied: {e}")
 
-    print("\n--- 5. Admin views compliance audit log ---")
+    print("\n--- Compliance audit trail (admin role) ---")
     for r in get_audit_trail("priya_admin", limit=5):
         print(r)

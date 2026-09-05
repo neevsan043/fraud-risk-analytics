@@ -1,9 +1,5 @@
 """
-Export the current audit_log table to CSV for the Power BI Compliance/Audit
-Trail page. Re-run this any time you want the Power BI page to reflect
-recent access events, then hit Refresh in Power BI — this is a
-scheduled/manual-refresh export, not a live connection (see
-app/audit_monitor.py for a true live view against the database itself).
+Export current audit_log entries to CSV for Power BI compliance reporting.
 """
 import sqlite3
 import pandas as pd

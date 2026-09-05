@@ -1,12 +1,8 @@
 """
-Export a Power BI-ready star schema.
+Export Power BI-ready star schema dimensions and fact tables.
 
-Mirrors the access-control story from the data layer: the fact table and
-"masked" customer dimension are safe for broad distribution (Power BI
-report viewers with the Analyst role). The full-PII customer dimension is
-exported to a SEPARATE file, intended to be imported only into the
-Admin/Compliance-restricted version of the report — same pattern as
-column-level masking, just at the file-distribution level.
+Generates CSV exports for fact_transactions, masked and restricted customer
+dimensions, merchants, calendar date dimension, and report role mappings.
 """
 import sqlite3
 import pandas as pd

@@ -20,7 +20,6 @@ Modern financial analytics systems require a balance between operational risk mo
 * **Security Layer:** SHA-256 PII hashing, Role-Based Access Control (`Analyst` vs. `Admin`), database views (`customers_masked`), dynamic DAX masking, and automated access audit logging.
 
 ---
----
 
 ## 🔒 Security, Privacy & RBAC Implementation
 
@@ -47,6 +46,7 @@ IF(
     LOOKUPVALUE(RESTRICTED_dim_customers_full[full_name], RESTRICTED_dim_customers_full[customer_hash], SELECTEDVALUE(fact_transactions[customer_hash])),
     LOOKUPVALUE(dim_customers_masked[name_masked], dim_customers_masked[customer_hash], SELECTEDVALUE(fact_transactions[customer_hash]))
 )
+```
 
 ## 📊 Dashboards & Analytics Suite
 
