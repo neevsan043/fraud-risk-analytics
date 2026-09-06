@@ -11,12 +11,12 @@ An end-to-end transaction fraud detection platform built using XGBoost, featurin
 
 ## 📌 Executive Summary
 
-Modern financial analytics systems require a balance between operational risk monitoring and strict data privacy compliance (GDPR, PCI-DSS). This project demonstrates a production-grade data pipeline and ML architecture that detects fraudulent credit card transactions while ensuring that operational analysts never inspect raw Personally Identifiable Information (PII).
+Modern financial analytics systems require a balance between operational risk monitoring and strict data privacy compliance (GDPR, PCI-DSS). This project implements an end-to-end fraud detection and security pipeline for credit card transactions. It couples an XGBoost classifier with database-level PII protection (PCI-DSS / GDPR principles), ensuring operational analysts monitor transaction risk without exposing raw Personally Identifiable Information.
 
 ### Key Performance Highlights
 * **Dataset:** 284,807 transactions with an extreme class imbalance (492 frauds, 0.17% fraud rate).
 * **ML Model:** XGBoost classifier reaching **90.8% Precision, 80.5% Recall, and 0.874 PR-AUC** (outperforming a ~6% precision Logistic Regression baseline).
-* **Feature Engineering:** Synthetic contextual enrichment (customers, merchants, geolocation). The engineered feature `is_foreign_txn` ranked as the **#3 most critical feature** in model feature importance.
+* **Feature Engineering:** Contextual enrichment across customer behavior, merchant categories, and geolocation. The engineered feature `is_foreign_txn` ranked as the **#3 most critical feature** in model feature importance.
 * **Security Layer:** SHA-256 PII hashing, Role-Based Access Control (`Analyst` vs. `Admin`), database views (`customers_masked`), dynamic DAX masking, and automated access audit logging.
 
 ---
@@ -28,8 +28,8 @@ All sensitive customer data (`full_name`, `email`, `billing_address`, `card_numb
 
 ### 2. Database Masking View (`customers_masked`)
 Non-administrative queries consume a sanitized view:
-* **Name Redaction:** `John Doe` $\rightarrow$ `J***`
-* **Card Truncation:** `4532-XXXX-XXXX-1234` $\rightarrow$ `****-****-****-1234`
+* **Name Redaction:** `John Doe` → `J***`
+* **Card Truncation:** `4532-XXXX-XXXX-1234` → `****-****-****-1234`
 
 ### 3. Application Enforcement Layer (`app/data_access.py`)
 All downstream data reads are routed through a Python access control module:
@@ -50,7 +50,7 @@ IF(
 
 ## 📊 Dashboards & Analytics Suite
 
-The project features a 2-page Power BI reporting suite connected to the processed star-schema data and security audit logs.
+The project features a 3-page Power BI reporting suite connected to processed star-schema tables, security audit logs, and model evaluation metrics.
 
 ### 1. Executive Fraud Risk Dashboard
 ![Executive Fraud Analytics](docs/images/executive_dashboard.png)
@@ -64,6 +64,15 @@ The project features a 2-page Power BI reporting suite connected to the processe
 
 * **Access Governance:** Tracks access counts by role (`analyst` vs `admin`).
 * **Security Flagging:** Surfaces unauthorized access attempts (`VIEW_AUDIT_LOG_DENIED`) via dynamic conditional red highlighting.
+
+---
+
+### 3. Model Health & Performance Validation
+![Model Health & Performance](docs/images/model_health_dashboard.png)
+
+* **Generalization & PR-AUC:** Tracks model calibration across probability thresholds, anchoring a **0.8740 PR-AUC** tradeoff curve suited for imbalanced fraud distributions.
+* **Holdout vs. Operational Evaluation:** Compares the 20% holdout test set (**70.34% F1-Score**, 83 TP, 15 FN, 55 FP) against full dataset operational scoring (**82.03% F1-Score**, 477 TP, 15 FN, 194 FP).
+* **Sensitivity Tuning:** Interactive threshold slicing helps teams optimize the precision-recall trade-off based on business cost tolerances.
 
 ---
 

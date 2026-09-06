@@ -11,7 +11,7 @@ PROCESSED_DIR = BASE_DIR / "data" / "processed"
 POWERBI_DIR = BASE_DIR / "powerbi"
 
 def export_full_dataset_performance():
-    print("[1/4] Loading processed transaction data...")
+    print("Loading processed transaction data...")
     model_df = pd.read_csv(PROCESSED_DIR / "model_features.csv")
     context_df = pd.read_csv(PROCESSED_DIR / "transaction_features.csv")
     
@@ -20,8 +20,7 @@ def export_full_dataset_performance():
     y = df["class"]
     txn_ids = df["transaction_id"]
     
-    print("[2/4] Fitting model across dataset context...")
-    # Train/test split executed to calculate scale_pos_weight on training subset (~578)
+    print("Fitting model with class weighting...")
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
@@ -36,11 +35,10 @@ def export_full_dataset_performance():
     )
     model.fit(X_train, y_train)
     
-    print("[3/4] Generating predictions for all 284,807 transactions...")
+    print("Generating predictions across all transactions...")
     full_preds = model.predict(X)
     full_probs = model.predict_proba(X)[:, 1]
     
-    # Calculate confusion matrix components
     tn, fp, fn, tp = confusion_matrix(y, full_preds).ravel()
     
     total = len(y)
@@ -50,7 +48,6 @@ def export_full_dataset_performance():
     accuracy = (tp + tn) / total
     specificity = tn / (tn + fp)
     
-    # --- Artifact 1: Full Dataset Summary Report ---
     summary_df = pd.DataFrame([{
         "evaluation_scope": "Full Dataset (100%)",
         "total_transactions": total,
@@ -65,7 +62,6 @@ def export_full_dataset_performance():
         "specificity_pct": round(specificity * 100, 4)
     }])
     
-    # --- Artifact 2: Full Dataset Itemized Predictions ---
     predictions_df = pd.DataFrame({
         "transaction_id": txn_ids,
         "actual_label": y.values,
@@ -85,14 +81,13 @@ def export_full_dataset_performance():
             
     predictions_df["confusion_matrix_category"] = predictions_df.apply(get_cm_category, axis=1)
     
-    # --- Export Files ---
     summary_path = POWERBI_DIR / "full_dataset_performance_report.csv"
     preds_path = POWERBI_DIR / "full_dataset_predictions.csv"
     
     summary_df.to_csv(summary_path, index=False)
     predictions_df.to_csv(preds_path, index=False)
     
-    print("[4/4] Exports successful!")
+    print("Exports completed:")
     print(f"  -> Performance Report: {summary_path}")
     print(f"  -> Predictions Ledger: {preds_path} ({len(predictions_df)} rows)")
 

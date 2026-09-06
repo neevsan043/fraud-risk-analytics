@@ -2,9 +2,8 @@ import sqlite3
 from pathlib import Path
 import pandas as pd
 
-# Standardize path resolution relative to project root
 BASE_DIR = Path(__file__).resolve().parent.parent
-DB_PATH = BASE_DIR / "data" / "fraud_analytics.db"
+DB_PATH = BASE_DIR / "data" / "processed" / "fraud_analytics.db"
 CSV_DIR = BASE_DIR / "data" / "processed"
 
 SCHEMA_SQLITE = """
@@ -94,14 +93,11 @@ FROM customers;
 """
 
 def main():
-    # Ensure data directory exists
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
     try:
-        # Load processed CSV artifacts
         customers = pd.read_csv(CSV_DIR / "customers.csv")[[
             "customer_id", "customer_hash", "full_name", "email",
             "card_number_masked", "card_number_hash", "billing_address",
@@ -112,35 +108,30 @@ def main():
         features = pd.read_csv(CSV_DIR / "transaction_features.csv")
         labels = pd.read_csv(CSV_DIR / "labels.csv")
 
-        # Use if_exists="replace" to allow clean idempotent re-runs
         customers.to_sql("customers", conn, if_exists="replace", index=False)
         merchants.to_sql("merchants", conn, if_exists="replace", index=False)
         transactions.to_sql("transactions", conn, if_exists="replace", index=False)
         features.to_sql("transaction_features", conn, if_exists="replace", index=False)
         labels.to_sql("labels", conn, if_exists="replace", index=False)
-        
-        print("CSV data successfully loaded into SQLite tables.")
+        print("Data successfully loaded into SQLite.")
     except FileNotFoundError as e:
-        print(f"Note: CSV files not found ({e}). Initializing schema shell only.")
+        print(f"CSV files not found ({e}). Initializing schema shell.")
 
-    # Apply schema definitions, constraints, indexes, and security views
     cur.executescript(SCHEMA_SQLITE)
 
-    # Populate RBAC application users
     cur.executemany(
         "INSERT OR IGNORE INTO app_users (user_id, username, role) VALUES (?,?,?)",
         [(1, "alex_analyst", "analyst"), (2, "priya_admin", "admin")],
     )
     conn.commit()
 
-    # Print record count diagnostics
-    print("\n--- SQLite Database Status ---")
+    print("\nTable row counts:")
     for tbl in ["customers", "merchants", "transactions", "transaction_features", "labels", "app_users"]:
         try:
             n = cur.execute(f"SELECT COUNT(*) FROM {tbl}").fetchone()[0]
-            print(f"Table '{tbl}': {n} rows")
+            print(f"  {tbl}: {n}")
         except sqlite3.OperationalError:
-            print(f"Table '{tbl}': 0 rows (not populated)")
+            print(f"  {tbl}: 0")
 
     conn.close()
 

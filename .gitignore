@@ -11,5 +11,9 @@ __pycache__/
 data/raw/
 data/processed/
 
-# System files
+# System & IDE files
 .DS_Store
+.pytest_cache/
+.idea/
+.vscode/
+*.pbit.bak

@@ -113,7 +113,7 @@ def main():
     conn.close()
     print(f"Wrote {len(flags)} rows to fraud_flags. Flagged as fraud: {flags['predicted_label'].sum()}")
 
-    # Save model artifacts
+    # Save trained model and scaler
     joblib.dump(xgb, "model/xgb_model.joblib")
     joblib.dump(scaler, "model/scaler.joblib")
     importances.to_csv("model/feature_importances.csv", header=["importance"])
