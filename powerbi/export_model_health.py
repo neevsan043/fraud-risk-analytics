@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import precision_recall_curve, auc
 from pathlib import Path
 
-# Resolve project root path dynamically
+# Project root paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 PROCESSED_DIR = BASE_DIR / "data" / "processed"
 POWERBI_DIR = BASE_DIR / "powerbi"

@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from pathlib import Path
 
-# Paths relative to project root
+# Project root paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 PROCESSED_DIR = BASE_DIR / "data" / "processed"
 POWERBI_DIR = BASE_DIR / "powerbi"

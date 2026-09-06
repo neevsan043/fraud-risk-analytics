@@ -13,7 +13,7 @@ OUT_DIR = "powerbi"
 def main():
     conn = sqlite3.connect(DB_PATH)
 
-    # ---- Fact table ----
+    # Fact table
     fact = pd.read_sql_query("""
         SELECT
             t.transaction_id,
@@ -38,24 +38,24 @@ def main():
     fact["transaction_date"] = pd.to_datetime(fact["transaction_ts"]).dt.date
     fact.to_csv(f"{OUT_DIR}/fact_transactions.csv", index=False)
 
-    # ---- Dim: customers, masked (safe for the Analyst role) ----
+    # Masked customer dimension (analyst-visible)
     dim_cust_masked = pd.read_sql_query(
         "SELECT customer_id, customer_hash, name_masked, card_last4, risk_tier FROM customers_masked", conn
     )
     dim_cust_masked.to_csv(f"{OUT_DIR}/dim_customers_masked.csv", index=False)
 
-    # ---- Dim: customers, full PII (Admin/Compliance-restricted file) ----
+    # Full PII customer dimension (admin only)
     dim_cust_full = pd.read_sql_query(
         "SELECT customer_id, customer_hash, full_name, email, card_number_masked, "
         "billing_address, home_country, risk_tier FROM customers", conn
     )
     dim_cust_full.to_csv(f"{OUT_DIR}/RESTRICTED_dim_customers_full.csv", index=False)
 
-    # ---- Dim: merchants ----
+    # Merchants dimension
     dim_merchants = pd.read_sql_query("SELECT * FROM merchants", conn)
     dim_merchants.to_csv(f"{OUT_DIR}/dim_merchants.csv", index=False)
 
-    # ---- Dim: date (calendar table for Power BI time intelligence) ----
+    # Date dimension for time intelligence
     dates = pd.date_range(fact["transaction_date"].min(), fact["transaction_date"].max(), freq="D")
     dim_date = pd.DataFrame({
         "date": dates,
@@ -68,7 +68,7 @@ def main():
     })
     dim_date.to_csv(f"{OUT_DIR}/dim_date.csv", index=False)
 
-    # ---- Dim: app users -> RLS role mapping ----
+    # Report users (role mapping for RLS)
     dim_users = pd.read_sql_query("SELECT username, role FROM app_users", conn)
     dim_users.to_csv(f"{OUT_DIR}/dim_report_users.csv", index=False)
 
